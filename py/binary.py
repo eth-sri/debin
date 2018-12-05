@@ -28,7 +28,7 @@ from common.constants import POINTER, ENUM, ARRAY, UNION, STRUCT, VOID
 from common.constants import SHORT, UNSIGNED_SHORT, CHAR, UNSIGNED_CHAR, LONG_LONG
 from common.constants import UNSIGNED_LONG_LONG, LONG, UNSIGNED_LONG
 from common.constants import INT, UNSIGNED_INT, BOOL, MAX_UPPER_BOUND
-from common.constants import SYMTAB, TTYPES
+from common.constants import SYMTAB, TTYPES, TEXT
 
 from depgraph.edges import Edges
 from depgraph.nodes import Nodes
@@ -342,8 +342,8 @@ class Binary:
         # DW_AT_language
         bs.append(ENUM_DW_AT_language['DW_LANG_C89'])
 
-        bs += utils.encode_address(self.low_pc, self)
-        bs += utils.encode_address(self.high_pc, self)
+        bs += utils.encode_address(self.sections.sections[TEXT].addr, self)
+        bs += utils.encode_address(self.sections.sections[TEXT].end_addr, self)
 
         self.string_table = StringTable(binary=self)
         self.symbol_table = SymbolTable(binary=self)

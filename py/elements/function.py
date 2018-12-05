@@ -36,7 +36,7 @@ class Functions:
         self.functions_by_tid = dict([(f.tid, f) for f in self.functions])
 
         self.low_pc = min(map(lambda f: f.low_pc, self.functions))
-        self.high_pc = max(map(lambda f: f.high_pc + f.low_pc, self.functions))
+        self.high_pc = max(map(lambda f: f.high_pc, self.functions))
 
     def initialize(self):
         self.binary.sections.init_dynsym_functions()
