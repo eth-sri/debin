@@ -1,0 +1,37 @@
+# names and types
++[^\"\[]+
+# boolean literals
+-true
+-false
+# null literal
+-NULL
+# keywords
+-abstract
+-alignof
+-auto
+-break
+-case
+-const
+-continue
+-default
+-do
+-double
+-else
+-extern
+-float
+-for
+-goto
+-if
+-inline
+-register
+-restrict
+-return
+-sizeof
+-static
+-switch
+-typedef
+-volatile
+-while
+# asm
+-asm
+-@UNK
