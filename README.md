@@ -95,7 +95,7 @@ $ ./bazel-bin/n2p/json_server/json_server \
 $ cd ..
 ```
 
-To predict debug information for the example binary `lcrack`, please use the following commands:
+To predict debug information for the example binary `lcrack`, please use the command below. Please note that for this command, if the input binary already has a symbol table, DEBIN will use the function names and boundaries from that symbol table. Otherwise, function boundaries are inferred by BAP and function names are predicted by DEBIN.
 ```
 $ python3 py/predict.py \
           --binary examples/stripped/lcrack \
@@ -108,7 +108,7 @@ $ readelf -S lcrack.output
 ```
 The output binary is `./lcrack.output`. You can view the section headers of the output and check the predicted debug sections by `readelf -S lcrack.output`.
 
-To evaluate the prediction accuracy, you need the ground truth debug information as input:
+To evaluate the prediction accuracy, you need the ground truth debug information as input. This command will clear all names and types that need to be inferred before prediction and compare predicted results with ground truth.
 ```
 $ python3 py/evaluate.py \
           --binary examples/stripped/lcrack \
