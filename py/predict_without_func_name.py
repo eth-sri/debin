@@ -11,8 +11,12 @@ def get_args():
     parser = argparse.ArgumentParser(description='Debin to hack binaries. '\
         'This script takes an stripped binary as input and output a binary with predicted debug information.')
 
-    parser.add_argument('--binary', dest='binary', type=str, default='', required=True,
-                        help='path of the binary you want to analyze.')
+    parser.add_argument('--binary_with_symtab', dest='binary_with_symtab', type=str, default='', required=True,
+                        help='path of the binary (with symbol table, stripped by "strip -g") you want to analyze.')
+    parser.add_argument('--binary_without_symtab', dest='binary_without_symtab', type=str, default='', required=True,
+                        help='path of the binary (without symbol table, stripped by "strip -s") you want to analyze.')
+    parser.add_argument('--debug_info', dest='debug_info', type=str, default='', required=True,
+                        help='Path of the debugging info.')
     parser.add_argument('--output', dest='output', type=str, default='', required=True,
                         help='path of output binary.')
     parser.add_argument('--bap', dest='bap', type=str, default='',
@@ -27,6 +31,8 @@ def get_args():
 
     parser.add_argument('--n2p_url', dest='n2p_url', type=str, default='', required=True,
                         help='URL of n2p server.')
+    parser.add_argument('--stat', dest='stat', type=str, default=None,
+                        help='Path of output statistics file.')
 
     args = parser.parse_args()
 
@@ -38,13 +44,17 @@ def main():
 
     config = Config()
 
-    config.MODE = config.TEST
+    config.MODE = config.TRAIN
 
-    config.BINARY_PATH = args.binary
-    config.BINARY_NAME = args.binary
-    config.OUTPUT_BINARY_PATH = args.output
+    config.BINARY_PATH = args.binary_with_symtab
+    config.BINARY_NAME = args.binary_with_symtab
     config.BAP_FILE_PATH = args.bap
+    config.DEBUG_INFO_PATH = args.debug_info
+
+    config.OUTPUT_BINARY_PATH = args.output
     config.MODIFY_ELF_LIB_PATH = args.elf_modifier
+    config.N2P_SERVER_URL = args.n2p_url
+    config.STAT_PATH = args.stat
 
     config.TWO_PASS = args.two_pass
     config.FP_MODEL_PATH = args.fp_model
@@ -67,12 +77,12 @@ def main():
         config.OFF_MODEL = pickle.load(off_model, encoding='latin1')
         config.OFF_MODEL.n_jobs = 1
 
-    config.N2P_SERVER_URL = args.n2p_url
-
-    with open(config.BINARY_PATH, 'rb') as elffile:
-        b = Binary(config, elffile)
-        b.set_test_result_from_server()
-        b.modify_elf()
+    with open(config.BINARY_PATH, 'rb') as elffile, open(config.DEBUG_INFO_PATH, 'rb') as debug_elffile:
+        b = Binary(config, elffile, debug_elffile)
+        b.set_test_result_from_server(True)
+        b.modify_elf(args.binary_without_symtab)
+        if config.STAT_PATH is not None:
+            b.dump_stat()
 
     if config.TWO_PASS:
         reg_dict.close()

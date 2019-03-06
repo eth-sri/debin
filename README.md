@@ -80,7 +80,7 @@ $ python3 py/train_crf.py \
           --valid_labels c_valid_labels
 ```
 
-The processes take less than a minute and the trained models are produced in `./new_models`.
+The processes take less than a minute and the trained models are produced in `./new_models`. Note that binaires in directory specified by argument `--bin_dir` should have a symbol table (i.e., `.symtab` section) so that correct function boundaries are used. To strip all other debug sections except `.symtab`, one can use command `strip -g`.
 
 ### Prediction and Evaluation
 
@@ -108,7 +108,7 @@ $ readelf -S lcrack.output
 ```
 The output binary is `./lcrack.output`. You can view the section headers of the output and check the predicted debug sections by `readelf -S lcrack.output`.
 
-To evaluate the prediction accuracy, you need the ground truth debug information as input. This command will clear all names and types that need to be inferred before prediction and compare predicted results with ground truth.
+To evaluate prediction accuracy, you need the ground truth debug information (sepcified by `--debug_info`). Note that during evaluation, we assume function boundary is given. Thus, a symbol table should be present for the input binary (the one sepcified by `--binary`). Ground truth names in the symbol table are not used during prediction and are only used for calculating evalution metrics.
 ```
 $ python3 py/evaluate.py \
           --binary examples/stripped/lcrack \
@@ -119,7 +119,19 @@ $ python3 py/evaluate.py \
           --stat ./stat.txt
 $ cat stat.txt
 ```
-You can view prediction statistics in `./stat.txt`.
+You can view prediction statistics in `./stat.txt`. If you also want an output binary during evaluation, please provide a fully stripped binary (stripped by `strip -s` and specified by `--binary_without_symtab`) and use the command below:
+```
+$ python3 py/predict_without_func_name.py \
+          --binary_with_symtab examples/stripped/lcrack
+          --binary_without_symtab examples/stripped_wo_symtab/lcrack
+          --debug_info examples/debug/lcrack
+          --output ./lcrack.output \
+          --elf_modifier cpp/modify_elf.so
+          -two_pass
+          --fp_model models/variable/x86/
+          --n2p_url http://localhost:8604
+          --stat ./stat.txt
+```
 
 
 ## Citing DEBIN

@@ -373,7 +373,7 @@ class Binary:
         bs = length.to_bytes(4, byteorder='little') + bs
         return bs
 
-    def modify_elf(self):
+    def modify_elf(self, binary_without_symtab=None):
         utils.write_progress('Preparing Output...', self)
         modify_elf = ctypes.cdll.LoadLibrary(self.config.MODIFY_ELF_LIB_PATH).modify_elf
         modify_elf.argtypes = [
@@ -401,8 +401,15 @@ class Binary:
         symtab = self.symbol_table.content
         symtab_info = self.symbol_table.num_entries
 
+        if binary_without_symtab is not None:
+            binary_path = binary_without_symtab.encode('ascii')
+            len_symtab = len(symtab)
+        else:
+            binary_path = self.config.BINARY_PATH.encode('ascii')
+            len_symtab = 0 if self.sections.has_sec(SYMTAB) else len(symtab)
+
         modify_elf(
-            self.config.BINARY_PATH.encode('ascii'),
+            binary_path,
             self.config.OUTPUT_BINARY_PATH.encode('ascii'),
             len(info),
             bytes(info),
@@ -412,7 +419,7 @@ class Binary:
             bytes(loc),
             len(strtab),
             bytes(strtab),
-            0 if self.sections.has_sec(SYMTAB) else len(symtab),
+            len_symtab,
             self.config.ADDRESS_BYTE_SIZE * 2 + 8,
             symtab_info,
             bytes(symtab)

@@ -1,4 +1,5 @@
 from common.constants import UNKNOWN_LABEL, ENUM_DW_FORM_exprloc, VOID, TTYPES
+from common.constants import TEXT, RODATA, DATA, BSS, INIT, FINI, PLT, GOTPLT, GOT, PLTGOT
 from common import utils
 from elements.regs import Reg
 from elements.offsets import IndirectOffset, DirectOffset
@@ -46,10 +47,30 @@ class SymbolTable:
                 name_off = self.binary.string_table.get_offset(function.test_name)
                 self.content += utils.encode_kbytes(name_off, 4)
 
+                if self.binary.sections.is_in_text_sec(function.low_pc):
+                    sec_idx = self.binary.elffile._section_name_map[TEXT]
+                elif self.binary.sections.is_in_init_sec(function.low_pc):
+                    sec_idx = self.binary.elffile._section_name_map[INIT]
+                elif self.binary.sections.is_in_fini_sec(function.low_pc):
+                    sec_idx = self.binary.elffile._section_name_map[FINI]
+                elif self.binary.sections.is_in_plt_sec(function.low_pc):
+                    sec_idx = self.binary.elffile._section_name_map[PLT]
+                elif self.binary.sections.is_in_gotplt_sec(function.low_pc):
+                    sec_idx = self.binary.elffile._section_name_map[GOTPLT]
+                elif self.binary.sections.is_in_got_sec(function.low_pc):
+                    sec_idx = self.binary.elffile._section_name_map[GOT]
+                elif self.binary.sections.is_in_pltgot_sec(function.low_pc):
+                    sec_idx = self.binary.elffile._section_name_map[PLTGOT]
+                else:
+                    print(self.binary.name)
+                    print(hex(function.low_pc))
+                    print(function.test_name)
+                    assert False, 'Function appears in section other than .text, .init, .fini, .plt, .got.plt, .got and .plt.got'
+
                 if self.binary.config.MACHINE_ARCH == 'x64':
                     self.content.append((0x1 << 4) + 0x2)
                     self.content.append(0x0)
-                    self.content.append(self.binary.elffile._section_name_map['.text'])
+                    self.content.append(sec_idx)
                     self.content.append(0x0)
 
                 self.content += utils.encode_address(function.low_pc, self.binary)
@@ -58,7 +79,7 @@ class SymbolTable:
                 if self.binary.config.MACHINE_ARCH in ('x86', 'ARM'):
                     self.content.append((0x1 << 4) + 0x2)
                     self.content.append(0x0)
-                    self.content.append(self.binary.elffile._section_name_map['.text'])
+                    self.content.append(sec_idx)
                     self.content.append(0x0)
 
         for off in sorted(self.binary.direct_offsets.keys()):
@@ -75,11 +96,11 @@ class SymbolTable:
                     self.content.append((0x1 << 4) + 0x1)
                     self.content.append(0x0)
                     if self.binary.sections.is_in_data_sec(off):
-                        self.content.append(self.binary.elffile._section_name_map['.data'])
+                        self.content.append(self.binary.elffile._section_name_map[DATA])
                     elif self.binary.sections.is_in_bss_sec(off):
-                        self.content.append(self.binary.elffile._section_name_map['.bss'])
+                        self.content.append(self.binary.elffile._section_name_map[BSS])
                     elif self.binary.sections.is_in_rodata_sec(off):
-                        self.content.append(self.binary.elffile._section_name_map['.rodata'])
+                        self.content.append(self.binary.elffile._section_name_map[RODATA])
                     else:
                         print(format(off, '02x'))
                         assert False, 'Direct Offset appears in section other than .data and .bss.'

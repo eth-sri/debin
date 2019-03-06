@@ -2,6 +2,7 @@ from common import constants
 from common import utils
 from common.constants import TEXT, RODATA, DATA, BSS, INIT, STRTAB
 from common.constants import FINI, PLT, DYNSYM, DYNSTR, GOTPLT, SYMTAB
+from common.constants import GOT, PLTGOT
 
 
 class Sections:
@@ -39,6 +40,12 @@ class Sections:
             self.sections[DYNSTR] = self.binary.elffile.get_section_by_name(DYNSTR)
         if self.binary.elffile.get_section_by_name(SYMTAB):
             self.sections[SYMTAB] = self.binary.elffile.get_section_by_name(SYMTAB)
+        if self.binary.elffile.get_section_by_name(GOT):
+            sec = self.binary.elffile.get_section_by_name(GOT)
+            self.sections[GOT] = SectionWithoutData(addr=sec['sh_addr'], data_size=sec.data_size, binary=self.binary)
+        if self.binary.elffile.get_section_by_name(PLTGOT):
+            sec = self.binary.elffile.get_section_by_name(PLTGOT)
+            self.sections[PLTGOT] = SectionWithoutData(addr=sec['sh_addr'], data_size=sec.data_size, binary=self.binary)
 
         self.symbol_names = set()
         self.init_symbol_names()
@@ -118,6 +125,12 @@ class Sections:
 
     def is_in_gotplt_sec(self, addr):
         return (GOTPLT in self.sections) and (self.sections[GOTPLT].is_in_sec(addr))
+
+    def is_in_got_sec(self, addr):
+        return (GOT in self.sections) and (self.sections[GOT].is_in_sec(addr))
+
+    def is_in_pltgot_sec(self, addr):
+        return (PLTGOT in self.sections) and (self.sections[PLTGOT].is_in_sec(addr))
 
     def get_gotplt_offset(self, addr):
         return addr if GOTPLT not in self.sections else self.sections[GOTPLT].get_offset(addr)
