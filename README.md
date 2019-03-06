@@ -122,14 +122,14 @@ $ cat stat.txt
 You can view prediction statistics in `./stat.txt`. If you also want an output binary during evaluation, please provide a fully stripped binary (stripped by `strip -s` and specified by `--binary_without_symtab`) and use the command below:
 ```
 $ python3 py/predict_without_func_name.py \
-          --binary_with_symtab examples/stripped/lcrack
-          --binary_without_symtab examples/stripped_wo_symtab/lcrack
-          --debug_info examples/debug/lcrack
+          --binary_with_symtab examples/stripped/lcrack \
+          --binary_without_symtab examples/stripped_wo_symtab/lcrack \
+          --debug_info examples/debug/lcrack \
           --output ./lcrack.output \
-          --elf_modifier cpp/modify_elf.so
-          -two_pass
-          --fp_model models/variable/x86/
-          --n2p_url http://localhost:8604
+          --elf_modifier cpp/modify_elf.so \
+          -two_pass \
+          --fp_model models/variable/x86/ \
+          --n2p_url http://localhost:8604 \
           --stat ./stat.txt
 ```
 
