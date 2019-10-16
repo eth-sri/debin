@@ -262,6 +262,8 @@ class Nodes:
             if clear and node_type == 'inf':
                 nodes.append(OrderedDict([('v', node.id), (node_type, '')]))
             else:
+                if node_name == UNKNOWN_LABEL:
+                    node_name = ''
                 nodes.append(OrderedDict([('v', node.id), (node_type, node_name)]))
 
         return nodes
