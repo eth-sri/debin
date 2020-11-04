@@ -47,9 +47,11 @@ ADD ./requirements.txt /debin/requirements.txt
 WORKDIR /debin
 
 # install python dependencies
-RUN apt-get -y install \
-    python3 \
-    python3-pip
+RUN apt-get update -y && apt-get install -y software-properties-common && add-apt-repository ppa:deadsnakes/ppa
+RUN apt-get update -y
+RUN apt install python3.7 -y
+RUN apt-get -y install python3-pip
+RUN pip3 install --upgrade pip
 RUN pip3 install -r requirements.txt
 
 # build bap plugin
