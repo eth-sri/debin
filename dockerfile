@@ -47,12 +47,11 @@ ADD ./requirements.txt /debin/requirements.txt
 WORKDIR /debin
 
 # install python dependencies
-RUN apt-get update -y && apt-get install -y software-properties-common && add-apt-repository ppa:deadsnakes/ppa
-RUN apt-get update -y
-RUN apt install python3.7 -y
-RUN apt-get -y install python3-pip
-RUN pip3 install --upgrade pip
-RUN pip3 install -r requirements.txt
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-py37_4.12.0-Linux-x86_64.sh
+RUN bash Miniconda3-py37_4.12.0-Linux-x86_64.sh -b -p /conda
+ENV PATH=/conda/bin:$PATH
+RUN conda init bash
+RUN conda run -n base pip3 install -r requirements.txt
 
 # build bap plugin
 WORKDIR /debin/ocaml
